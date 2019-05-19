@@ -4,7 +4,7 @@ from modules.LDATrainer import LDATrainer
 
 data = pd.read_csv('data/lda_train.csv', sep=';')
 
-trainer = LDATrainer(data.cleaned.values.tolist()[0:1])
+trainer = LDATrainer(data.cleaned.values.tolist())
 
 trainer.prepare_data()
 trainer.train_model()

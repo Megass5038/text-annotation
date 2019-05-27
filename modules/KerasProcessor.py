@@ -52,13 +52,13 @@ class KerasProcessor:
         model = Sequential()
         model.add(Embedding(self.vocabulary, self.hidden_size, input_length=self.num_steps))
         model.add(LSTM(self.hidden_size, return_sequences=True))
-        model.add(LSTM(self.hidden_size, return_sequences=True))
+        # model.add(LSTM(self.hidden_size, return_sequences=True))
         if self.use_dropout:
             model.add(Dropout(0.5))
-        model.add(TimeDistributed(Dense(self.vocabulary)))
-        model.add(Activation('softmax'))
+        # model.add(TimeDistributed(Dense(self.vocabulary)))
+        model.add(Dense(self.vocabulary, activation='softmax'))
         optimizer = Adam()
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
         self.checkpointer = ModelCheckpoint(filepath=self.model_path, verbose=1)
         self.model = model
         self.load_weights_if_exists()

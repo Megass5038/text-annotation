@@ -2,7 +2,7 @@ import pandas as pd
 import random
 from nltk import sent_tokenize
 
-df = pd.read_csv('data/lstm_articles.csv')
+df = pd.read_csv('data/articles1.csv')
 
 sentences = []
 
@@ -10,8 +10,8 @@ test_data = []
 valid_data = []
 train_data = []
 
-for text in df.text:
-	sentences.extend(sent_tokenize(text, language='russian'))
+for text in df.content[0:500]:
+	sentences.extend(sent_tokenize(text))
 
 for sent in sentences:
 	rand_val = random.randint(1, 10)

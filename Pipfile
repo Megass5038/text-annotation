@@ -11,6 +11,5 @@ pandas = "*"
 keras = "*"
 tensorflow = "*"
 gensim = "*"
-pymystem3 = "*"
 
 [dev-packages]

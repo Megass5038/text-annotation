@@ -11,4 +11,4 @@ test_data = read_file('data/lstm_data.test.txt')
 
 trainer = KerasProcessor(train_data, valid_data, test_data, model_path)
 trainer.build_model()
-# trainer.train_model()
+trainer.train_model()

@@ -3,12 +3,12 @@ from keras.utils import to_categorical
 
 
 class KerasBatchGenerator:
-    def __init__(self, data, num_steps, batch_size, vocabulary, skip_step=5):
+    def __init__(self, data, num_steps, batch_size, vocabulary, skip_step=5, idx=0):
         self.data = data
         self.num_steps = num_steps
         self.batch_size = batch_size
         self.vocabulary = vocabulary
-        self.current_idx = 0
+        self.current_idx = idx
         self.skip_step = skip_step
 
     def generate(self):

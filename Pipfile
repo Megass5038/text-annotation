@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 nltk = "*"
 numpy = "*"
+spacy = "*"
 pandas = "*"
 keras = "*"
 tensorflow = "*"

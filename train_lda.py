@@ -2,9 +2,9 @@ import pandas as pd
 import os
 from modules.LDATrainer import LDATrainer
 
-data = pd.read_csv('data/lda_train.csv', sep=';')
+data = pd.read_csv('data/articles1.csv')
 
-trainer = LDATrainer(data.cleaned.values.tolist())
+trainer = LDATrainer(data.content.values.tolist())
 
 trainer.prepare_data()
 trainer.train_model()

@@ -1,11 +1,12 @@
 import re
 import operator
-from pymystem3 import Mystem
+import spacy
+import statistics
+from statistics import StatisticsError
 from gensim.test.utils import datapath
 from gensim.models.ldamodel import LdaModel
 from nltk.corpus import stopwords
-from nltk import word_tokenize
-from nltk import pos_tag
+from nltk import sent_tokenize
 
 
 class LDAExtractor:
@@ -14,8 +15,8 @@ class LDAExtractor:
         file = datapath(model_path)
         self.model = LdaModel.load(file)
         self.id2word = self.model.id2word
-        self.stopwords = stopwords.words('russian')
-        self.steamer = Mystem()
+        self.stopwords = stopwords.words()
+        self.steamer = spacy.load('en', disable=['parser', 'ner'])
 
     def preprocess_text(self, text):
         text = re.sub('\S*@\S*\s?', '', text)
@@ -23,27 +24,23 @@ class LDAExtractor:
         text = re.sub("\'", "", text)
         return text
 
-    def lemmatize_text(self, text, allowed_postags=['S', 'ADV', 'V', 'A']):
-        doc = self.steamer.lemmatize(text)
-        doc = "".join(doc)
-        words = word_tokenize(doc, language='russian')
-        tags = pos_tag(words, lang='rus')
-        texts_out = [token[0] for token in tags if token[1] in allowed_postags and token not in self.stopwords]
-        return texts_out
+    def lemmatize_text(self, text, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
+        doc = self.steamer(text)
+        return [token.lemma_ for token in doc if token.pos_ in allowed_postags]
 
-    def extract_keywords(self, text, keywords_num=10):
+    def extract_keywords(self, text, keywords_num=10, with_coef=False):
         text = self.preprocess_text(text)
         tokens = self.lemmatize_text(text)
         doc = self.id2word.doc2bow(tokens)
         topics = self.model.get_document_topics(doc)
-        return self.extract_keywords_from_topics(topics, keywords_num)
+        return self.extract_keywords_from_topics(topics, keywords_num, with_coef)
 
-    def extract_keywords_from_topics(self, topics, keywords_num):
+    def extract_keywords_from_topics(self, topics, keywords_num, with_coef=False):
         scored_topics = {}
 
         for id, score in topics:
             scored_topics[id] = {
-                'keywords': self.model.show_topic(keywords_num),
+                'keywords': self.model.show_topic(id),
                 'score': score
             }
         scored_keywords = {}
@@ -54,4 +51,23 @@ class LDAExtractor:
                 if keyword not in scored_keywords or (scored_keywords[keyword[0]] < keyword_score):
                     scored_keywords[keyword[0]] = keyword_score
         sorted_keywords = sorted(scored_keywords.items(), key=operator.itemgetter(1), reverse=True)[0:keywords_num]
-        return [keyword for keyword, score in sorted_keywords]
+        return sorted_keywords if with_coef else [keyword for keyword, score in sorted_keywords]
+
+    def extract_key_sentences(self, text, sent_num=5):
+        keywords = self.extract_keywords(text, 999, True)
+        keywords_dict = dict(keywords)
+        text = self.preprocess_text(text)
+        sentences = sent_tokenize(text)
+        sent_scores = [(sent, self.calculate_sent_score(sent, keywords_dict)) for sent in sentences][0:sent_num]
+        sorted_sents = sorted(sent_scores, key=lambda tup: tup[1], reverse=True)
+        return [sent for sent, score in sorted_sents]
+
+    def calculate_sent_score(self, text, scores):
+        tokens = self.lemmatize_text(text)
+        sent_scores = []
+        for token in tokens:
+            sent_scores.append(scores.get(token, 0))
+        try:
+            return statistics.mean(sent_scores)
+        except StatisticsError as e:
+            return 0

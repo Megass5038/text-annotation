@@ -1,9 +1,7 @@
 import re
 import gensim.corpora as corpora
-from pymystem3 import Mystem
+import spacy
 from nltk.corpus import stopwords
-from nltk import word_tokenize
-from nltk import pos_tag
 from gensim.test.utils import datapath
 from gensim.models.ldamodel import LdaModel
 
@@ -16,8 +14,8 @@ class LDATrainer:
 
     def __init__(self, data_list):
         self.data = self.preprocess_data(data_list)
-        self.stopwords = stopwords.words('russian')
-        self.steamer = Mystem()
+        self.stopwords = stopwords.words()
+        self.steamer = spacy.load('en', disable=['parser', 'ner'])
 
     def preprocess_data(self, data):
         data = [re.sub('\S*@\S*\s?', '', sent) for sent in data]
@@ -25,15 +23,11 @@ class LDATrainer:
         data = [re.sub("\'", "", sent) for sent in data]
         return data
 
-    def lemmatization(self, texts, allowed_postags=['S', 'ADV', 'V', 'A']):
+    def lemmatization(self, texts, allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV']):
         texts_out = []
         for sent in texts:
-            doc = self.steamer.lemmatize(sent)
-            doc = "".join(doc)
-            words = word_tokenize(doc)
-            tags = pos_tag(words, lang='rus')
-            texts_out.append(
-                [token[0] for token in tags if token[1] in allowed_postags and token not in self.stopwords])
+            doc = self.steamer(sent)
+            texts_out.append([token.lemma_ for token in doc if token.pos_ in allowed_postags])
         return texts_out
 
     def prepare_data(self):

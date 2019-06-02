@@ -10,4 +10,8 @@ lstm_model_path = os.getcwd() + "/models/lstm_model.hdf5"
 annotator = TextAnnotator(lda_model_path, lstm_model_path)
 
 for content in df.content[0:500]:
-    print(annotator.generate_annotation(content))
+    print(". ".join(annotator.generate_annotation(content)))
+    print()
+    print()
+    print()
+    print()

@@ -63,10 +63,10 @@ class KerasProcessor:
             # model.add(TimeDistributed(Dense(self.vocabulary)))
             model.add(Dense(self.vocabulary, activation='softmax'))
             # optimizer = Adam()
-            model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-            self.checkpointer = ModelCheckpoint(filepath=self.model_path, verbose=1)
             self.model = model
             self.save_model_structure()
+        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        self.checkpointer = ModelCheckpoint(filepath=self.model_path, verbose=1)
         self.load_weights_if_exists()
 
     def load_weights_if_exists(self):
